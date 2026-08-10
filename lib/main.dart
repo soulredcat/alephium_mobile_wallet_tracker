@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 
 import 'repository/alephium_api_repository.dart';
 import 'repository/local_store_repository.dart';
-import 'theme/app_theme.dart';
-import 'screens/dashboard_screen.dart';
+import 'screens/explorer_shell.dart';
 import 'services/wallet_monitor_service.dart';
+import 'theme/app_theme.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final apiRepository = AlephiumApiRepository();
@@ -30,12 +30,12 @@ class MobileMonitorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Alephium Monitor',
+      title: 'Alephium Explorer',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      home: const DashboardScreen(),
+      themeMode: ThemeMode.dark,
+      home: const ExplorerShell(),
     );
   }
 }
