@@ -223,6 +223,9 @@ class TransactionListItem extends StatelessWidget {
       return;
     }
     Clipboard.setData(ClipboardData(text: value));
+    if (!context.mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );

@@ -253,7 +253,11 @@ class WalletMonitorService extends ChangeNotifier {
     await _refreshActiveAddress();
   }
 
-  Future<void> addAddress(String address, String? label) async {
+  Future<void> addAddress(
+    String address,
+    String? label, {
+    bool refreshAfterAdd = true,
+  }) async {
     final normalized = address.trim();
     if (!isValidAlephiumAddress(normalized)) {
       throw Exception('Invalid address');
@@ -280,6 +284,10 @@ class WalletMonitorService extends ChangeNotifier {
     await _localStoreRepository.saveSelectedAddress(normalized);
 
     notifyListeners();
+    if (!refreshAfterAdd) {
+      return;
+    }
+
     await refreshActiveAddress(force: true);
   }
 

@@ -248,6 +248,7 @@ class _AddWalletSheetState extends State<_AddWalletSheet> {
   Future<void> _handleSubmit() async {
     final normalizedAddress = _addressController.text.trim();
     final normalizedLabel = _labelController.text.trim();
+    final service = context.read<WalletMonitorService>();
 
     setState(() {
       _isSubmitting = true;
@@ -271,18 +272,21 @@ class _AddWalletSheetState extends State<_AddWalletSheet> {
     }
 
     try {
-      await context.read<WalletMonitorService>().addAddress(
-            normalizedAddress,
-            normalizedLabel,
-          );
+      await service.addAddress(
+        normalizedAddress,
+        normalizedLabel,
+        refreshAfterAdd: false,
+      );
 
       if (!mounted) {
         return;
       }
 
-      if (Navigator.of(context).canPop()) {
-        Navigator.of(context).pop();
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.pop();
       }
+      await service.refreshActiveAddress(force: true);
     } catch (error) {
       if (!mounted) {
         return;

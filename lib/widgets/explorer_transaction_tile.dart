@@ -46,7 +46,9 @@ class ExplorerTransactionTile extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    incoming ? Icons.south_west_rounded : Icons.north_east_rounded,
+                    incoming
+                        ? Icons.south_west_rounded
+                        : Icons.north_east_rounded,
                     color: directionColor,
                     size: 20,
                   ),
@@ -83,6 +85,7 @@ class ExplorerTransactionTile extends StatelessWidget {
                       Text(
                         '${incoming ? 'From' : 'To'}: ${formatShortAddress(counterparty)}',
                         overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                         style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -97,6 +100,8 @@ class ExplorerTransactionTile extends StatelessWidget {
                   children: [
                     Text(
                       '${incoming ? '+' : '-'}${formatAlph(amount)} ALPH',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                       style: TextStyle(
                         color: directionColor,
                         fontWeight: FontWeight.w800,
@@ -119,11 +124,13 @@ class ExplorerTransactionTile extends StatelessWidget {
             const Divider(color: AppColors.borderSoft),
             const SizedBox(height: 10),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
                     'Hash: ${formatShortHex(transaction.hash)}',
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontFamily: 'monospace',
@@ -132,13 +139,17 @@ class ExplorerTransactionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  transaction.blockHash.isEmpty
-                      ? 'Unconfirmed block'
-                      : 'Block ${formatShortHex(transaction.blockHash, leadingChars: 6, trailingChars: 4)}',
-                  style: const TextStyle(
-                    color: AppColors.textMuted,
-                    fontSize: 10,
+                Flexible(
+                  child: Text(
+                    transaction.blockHash.isEmpty
+                        ? 'Unconfirmed block'
+                        : 'Block ${formatShortHex(transaction.blockHash, leadingChars: 6, trailingChars: 4)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ],

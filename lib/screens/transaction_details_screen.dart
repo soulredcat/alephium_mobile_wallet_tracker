@@ -251,6 +251,7 @@ class _DetailRow extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               onTap: onCopy,
+              borderRadius: BorderRadius.circular(14),
               child: const Icon(Icons.copy_rounded,
                   size: 16, color: AppColors.textSecondary),
             ),
