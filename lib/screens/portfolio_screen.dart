@@ -216,17 +216,72 @@ class PortfolioScreen extends StatelessWidget {
   }
 
   static Future<void> _showAddWallet(BuildContext context) async {
-    await showModalBottomSheet<void>(
+    final service = context.read<WalletMonitorService>();
+    final result = await showModalBottomSheet<_PendingWallet?>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.backgroundElevated,
-      builder: (_) => const _AddWalletSheet(),
+      builder: (sheetContext) => _AddWalletSheet(
+        onSubmit: (address, label) async {
+          final normalized = address.trim();
+          if (normalized.isEmpty) {
+            return const _PendingWallet.error('Address is required');
+          }
+          if (!isValidAlephiumAddress(normalized)) {
+            return const _PendingWallet.error('Invalid address');
+          }
+          return _PendingWallet(address: normalized, label: label);
+        },
+      ),
     );
+
+    if (!context.mounted || result == null) {
+      return;
+    }
+
+    if (result.isError) {
+      _showToast(context, result.message);
+      return;
+    }
+
+    if (result.address == null || result.label == null) {
+      if (!context.mounted) {
+        return;
+      }
+      _showToast(context, 'Invalid address input');
+      return;
+    }
+
+    try {
+      await service.addAddress(
+        result.address!,
+        result.label!,
+        refreshAfterAdd: false,
+      );
+      await Future<void>.delayed(Duration.zero);
+      await service.refreshActiveAddress(force: true);
+      if (!context.mounted) {
+        return;
+      }
+      _showToast(context, 'Address added');
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      _showToast(context, error.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  static void _showToast(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
 class _AddWalletSheet extends StatefulWidget {
-  const _AddWalletSheet();
+  const _AddWalletSheet({required this.onSubmit});
+
+  final Future<_PendingWallet?> Function(String address, String label) onSubmit;
 
   @override
   State<_AddWalletSheet> createState() => _AddWalletSheetState();
@@ -248,45 +303,27 @@ class _AddWalletSheetState extends State<_AddWalletSheet> {
   Future<void> _handleSubmit() async {
     final normalizedAddress = _addressController.text.trim();
     final normalizedLabel = _labelController.text.trim();
-    final service = context.read<WalletMonitorService>();
 
     setState(() {
       _isSubmitting = true;
       _error = null;
     });
 
-    if (normalizedAddress.isEmpty) {
-      setState(() {
-        _isSubmitting = false;
-        _error = 'Address is required';
-      });
-      return;
-    }
-
-    if (!isValidAlephiumAddress(normalizedAddress)) {
-      setState(() {
-        _isSubmitting = false;
-        _error = 'Invalid address';
-      });
-      return;
-    }
-
     try {
-      await service.addAddress(
-        normalizedAddress,
-        normalizedLabel,
-        refreshAfterAdd: false,
-      );
-
+      final result = await widget.onSubmit(normalizedAddress, normalizedLabel);
       if (!mounted) {
         return;
       }
 
-      final navigator = Navigator.of(context);
-      if (navigator.canPop()) {
-        navigator.pop();
+      if (result != null && !result.isError) {
+        Navigator.pop(context, result);
+        return;
       }
-      await service.refreshActiveAddress(force: true);
+
+      setState(() {
+        _isSubmitting = false;
+        _error = result?.message ?? 'Failed to add address';
+      });
     } catch (error) {
       if (!mounted) {
         return;
@@ -346,6 +383,8 @@ class _AddWalletSheetState extends State<_AddWalletSheet> {
                 const SizedBox(height: 10),
                 Text(
                   _error!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style:
                       const TextStyle(color: AppColors.negative, fontSize: 12),
                 ),
@@ -370,6 +409,28 @@ class _AddWalletSheetState extends State<_AddWalletSheet> {
       ),
     );
   }
+}
+
+class _PendingWallet {
+  const _PendingWallet({
+    required this.address,
+    required this.label,
+    this.message = '',
+    this.isError = false,
+  });
+
+  const _PendingWallet.error(String message)
+      : this(
+          address: null,
+          label: null,
+          message: message,
+          isError: true,
+        );
+
+  final String? address;
+  final String? label;
+  final String message;
+  final bool isError;
 }
 
 class _LogoMark extends StatelessWidget {

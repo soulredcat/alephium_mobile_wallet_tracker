@@ -300,7 +300,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _labelController.clear();
     final service = context.read<WalletMonitorService>();
 
-    final result = await showModalBottomSheet<String?>(
+    final result = await showModalBottomSheet<_PendingAddress?>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
@@ -310,22 +310,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onSubmit: (address, label) async {
             final normalized = address.trim();
             if (normalized.isEmpty) {
-              return 'Address is required';
+              return const _PendingAddress.error('Address is required');
             }
             if (!isValidAlephiumAddress(normalized)) {
-              return 'Invalid address';
+              return const _PendingAddress.error('Invalid address');
             }
 
-            try {
-              await service.addAddress(
-                normalized,
-                label,
-                refreshAfterAdd: false,
-              );
-              return null;
-            } catch (error) {
-              return _extractErrorMessage(error);
-            }
+            return _PendingAddress(address: normalized, label: label);
           },
         );
       },
@@ -334,13 +325,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (!mounted || result == null) {
       return;
     }
-    if (result.isNotEmpty) {
-      _showToast(context, result);
+
+    if (result.isError) {
+      _showToast(context, result.message);
       return;
     }
 
     try {
+      await service.addAddress(
+        result.address!,
+        result.label!,
+        refreshAfterAdd: false,
+      );
+      await Future<void>.delayed(Duration.zero);
       await service.refreshActiveAddress(force: true);
+      if (!mounted) {
+        return;
+      }
+      _showToast(context, 'Address added');
     } catch (error) {
       if (!mounted) {
         return;
@@ -348,8 +350,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _showToast(context, _extractErrorMessage(error));
       return;
     }
-
-    _showToast(context, 'Address added');
   }
 
   Future<void> _openManageAddressesDialog(BuildContext context) async {
@@ -1038,7 +1038,8 @@ class _AddAddressSheet extends StatefulWidget {
 
   final TextEditingController addressController;
   final TextEditingController labelController;
-  final Future<String?> Function(String address, String label) onSubmit;
+  final Future<_PendingAddress?> Function(String address, String label)
+      onSubmit;
 
   @override
   State<_AddAddressSheet> createState() => _AddAddressSheetState();
@@ -1058,19 +1059,19 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
     });
 
     try {
-      final error = await widget.onSubmit(address, label);
+      final result = await widget.onSubmit(address, label);
       if (!mounted) {
         return;
       }
 
-      if (error == null) {
-        Navigator.pop(context, '');
+      if (result != null && !result.isError) {
+        Navigator.pop(context, result);
         return;
       }
 
       setState(() {
         _isSubmitting = false;
-        _errorMessage = error;
+        _errorMessage = result?.message ?? 'Failed to add address';
       });
     } catch (error) {
       if (!mounted) {
@@ -1129,6 +1130,8 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
                 const SizedBox(height: 12),
                 Text(
                   _errorMessage!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
@@ -1153,4 +1156,26 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
       ),
     );
   }
+}
+
+class _PendingAddress {
+  const _PendingAddress({
+    required this.address,
+    required this.label,
+    this.message = '',
+    this.isError = false,
+  });
+
+  const _PendingAddress.error(String message)
+      : this(
+          address: null,
+          label: null,
+          message: message,
+          isError: true,
+        );
+
+  final String? address;
+  final String? label;
+  final String message;
+  final bool isError;
 }
