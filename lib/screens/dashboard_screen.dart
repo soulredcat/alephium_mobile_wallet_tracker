@@ -335,10 +335,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await service.addAddress(
         result.address!,
         result.label!,
-        refreshAfterAdd: false,
       );
-      await Future<void>.delayed(Duration.zero);
-      await service.refreshActiveAddress(force: true);
       if (!mounted) {
         return;
       }

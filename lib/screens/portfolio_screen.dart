@@ -256,10 +256,7 @@ class PortfolioScreen extends StatelessWidget {
       await service.addAddress(
         result.address!,
         result.label!,
-        refreshAfterAdd: false,
       );
-      await Future<void>.delayed(Duration.zero);
-      await service.refreshActiveAddress(force: true);
       if (!context.mounted) {
         return;
       }
