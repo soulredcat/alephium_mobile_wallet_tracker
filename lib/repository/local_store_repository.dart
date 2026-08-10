@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/alephium_address.dart';
 import '../models/wallet_state.dart';
-import '../utils/constants.dart';
 import '../utils/alephium_formats.dart';
 
 class LocalStoreRepository {
@@ -15,6 +14,8 @@ class LocalStoreRepository {
   static const _addressesKey = 'mobile_monitor.addresses.v1';
   static const _selectedAddressKey = 'mobile_monitor.selected_address.v1';
   static const _statePrefix = 'mobile_monitor.state.v1';
+  static const _legacyDefaultAddress =
+      '1HkqAaFZYDh2r9K67JoSiwf4ph7f2qZU1trBDu9nC2C3U';
 
   static Future<LocalStoreRepository> create() async {
     final preferences = await SharedPreferences.getInstance();
@@ -56,7 +57,19 @@ class LocalStoreRepository {
 
     final ordered = unique.values.toList(growable: false)
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-    return ordered;
+    final sanitized = ordered
+        .where((item) => item.address != _legacyDefaultAddress)
+        .toList(growable: false);
+
+    if (sanitized.length != ordered.length) {
+      await saveAddresses(sanitized);
+      final selected = _preferences.getString(_selectedAddressKey);
+      if (selected == _legacyDefaultAddress) {
+        await _preferences.remove(_selectedAddressKey);
+      }
+    }
+
+    return sanitized;
   }
 
   Future<void> saveAddresses(List<AlephiumAddress> addresses) async {
@@ -103,26 +116,6 @@ class LocalStoreRepository {
       _stateKey(address),
       jsonEncode(state.toJson()),
     );
-  }
-
-  Future<void> saveDefaultDataIfMissing() async {
-    final addresses = await loadAddresses();
-    final hasDefault = addresses.any(
-      (item) => item.address == defaultAlephiumAddress,
-    );
-
-    if (hasDefault) {
-      return;
-    }
-
-    final defaultAddress = AlephiumAddress(
-      address: defaultAlephiumAddress,
-      label: 'Default',
-      createdAt: DateTime.now(),
-      isDefault: true,
-    );
-    await saveAddresses([defaultAddress]);
-    await saveSelectedAddress(defaultAlephiumAddress);
   }
 
   Future<void> clearState(String address) async {

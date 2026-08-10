@@ -2,11 +2,11 @@
 
 ## Goal
 - Build a fully working Alephium monitor in Flutter (read-only) for Android/iOS.
-- Provide a default address and support multi-address switching in one app.
+- Provide multi-address switching in one app.
 - Support monitoring balance, locked balance, transaction history, and per-address balance-over-time chart.
 
-## Default
-- Default address: `1HkqAaFZYDh2r9K67JoSiwf4ph7f2qZU1trBDu9nC2C3U`
+## Default behavior
+- No preloaded default address on first launch.
 
 ## Core features
 - Add / delete / rename Alephium addresses.
@@ -52,5 +52,5 @@
 - Read-only only: does not store private keys.
 - Cache-first strategy: latest data saved locally via `SharedPreferences` remains visible offline.
 - Sync states: `Online`, `Warning`, `Offline`.
-- Default address: `1HkqAaFZYDh2r9K67JoSiwf4ph7f2qZU1trBDu9nC2C3U`.
+- No preloaded default address on first launch.
 - BigInt-safe balance formatting with grouped separators to avoid precision issues.

@@ -83,7 +83,7 @@ In this project, release APK generation has been validated.
 - `lib/utils`: formatters and constants
 
 ## Default address
-- `1HkqAaFZYDh2r9K67JoSiwf4ph7f2qZU1trBDu9nC2C3U`
+- No preloaded default address on first launch.
 
 ## Runtime notes
 - API backend: `https://backend.mainnet.alephium.org`

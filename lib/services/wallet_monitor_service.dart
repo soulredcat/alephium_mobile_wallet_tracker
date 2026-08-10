@@ -118,17 +118,6 @@ class WalletMonitorService extends ChangeNotifier {
     _initialized = true;
 
     await _loadPersistedState();
-    if (_addresses.isEmpty) {
-      final defaultAddress = AlephiumAddress(
-        address: defaultAlephiumAddress,
-        label: 'Default',
-        createdAt: DateTime.now(),
-        isDefault: true,
-      );
-      _addresses.add(defaultAddress);
-      await _localStoreRepository.saveAddresses(_addresses);
-      _selectedAddress = defaultAddress.address;
-    }
 
     _ensureSelectedAddress();
     if (_selectedAddress != null) {
@@ -200,8 +189,6 @@ class WalletMonitorService extends ChangeNotifier {
   }
 
   Future<void> _loadPersistedState() async {
-    await _localStoreRepository.saveDefaultDataIfMissing();
-
     final persistedAddresses = await _localStoreRepository.loadAddresses();
     _addresses
       ..clear()
