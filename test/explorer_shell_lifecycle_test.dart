@@ -11,6 +11,13 @@ import 'package:mobilemonitor/services/wallet_monitor_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  Finder navLabel(String label) {
+    return find.descendant(
+      of: find.byType(NavigationBar),
+      matching: find.text(label),
+    );
+  }
+
   testWidgets('explorer shell mounts, switches tabs, and deactivates cleanly',
       (tester) async {
     SharedPreferences.setMockInitialValues({});
@@ -33,17 +40,17 @@ void main() {
     expect(find.text('Alephium Explorer'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Wallets'));
+    await tester.tap(navLabel('Wallets'));
     await tester.pumpAndSettle();
     expect(find.text('Address Details'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Transactions').last);
+    await tester.tap(navLabel('Transactions'));
     await tester.pumpAndSettle();
     expect(find.text('No wallet selected'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Settings'));
+    await tester.tap(navLabel('Settings'));
     await tester.pumpAndSettle();
     expect(find.text('Monitor mode'), findsOneWidget);
     expect(tester.takeException(), isNull);
