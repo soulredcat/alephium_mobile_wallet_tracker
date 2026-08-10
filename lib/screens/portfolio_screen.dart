@@ -30,7 +30,9 @@ class PortfolioScreen extends StatelessWidget {
         actions: [
           IconButton(
             tooltip: 'Refresh selected wallet',
-            onPressed: service.isNetworkAvailable && !service.isBusy && service.selectedAddress != null
+            onPressed: service.isNetworkAvailable &&
+                    !service.isBusy &&
+                    service.selectedAddress != null
                 ? () => service.refreshActiveAddress(force: true)
                 : null,
             icon: const Icon(Icons.refresh_rounded),
@@ -51,13 +53,18 @@ class PortfolioScreen extends StatelessWidget {
                       const Expanded(
                         child: Text(
                           'Total Portfolio Value',
-                          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 12),
                         ),
                       ),
                       Icon(
-                        service.isOnline ? Icons.cloud_done_outlined : Icons.cloud_off_outlined,
+                        service.isOnline
+                            ? Icons.cloud_done_outlined
+                            : Icons.cloud_off_outlined,
                         size: 17,
-                        color: service.isOnline ? AppColors.positive : AppColors.warning,
+                        color: service.isOnline
+                            ? AppColors.positive
+                            : AppColors.warning,
                       ),
                     ],
                   ),
@@ -82,12 +89,14 @@ class PortfolioScreen extends StatelessWidget {
                     children: [
                       _MetricPill(
                         icon: Icons.lock_outline_rounded,
-                        label: '${formatAlph(service.totalLockedBalance)} locked',
+                        label:
+                            '${formatAlph(service.totalLockedBalance)} locked',
                         color: AppColors.warning,
                       ),
                       _MetricPill(
                         icon: Icons.account_balance_wallet_outlined,
-                        label: '${service.addressCount} wallet${service.addressCount == 1 ? '' : 's'}',
+                        label:
+                            '${service.addressCount} wallet${service.addressCount == 1 ? '' : 's'}',
                         color: AppColors.info,
                       ),
                     ],
@@ -96,7 +105,8 @@ class PortfolioScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     SizedBox(
                       height: 92,
-                      child: ExplorerBalanceChart(points: selectedState!.chartPoints),
+                      child: ExplorerBalanceChart(
+                          points: selectedState!.chartPoints),
                     ),
                   ],
                 ],
@@ -108,7 +118,10 @@ class PortfolioScreen extends StatelessWidget {
                 const Expanded(
                   child: Text(
                     'Wallets',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800),
                   ),
                 ),
                 OutlinedButton.icon(
@@ -125,17 +138,23 @@ class PortfolioScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Column(
                     children: [
-                      const Icon(Icons.account_balance_wallet_outlined, size: 42, color: AppColors.textMuted),
+                      const Icon(Icons.account_balance_wallet_outlined,
+                          size: 42, color: AppColors.textMuted),
                       const SizedBox(height: 12),
                       const Text(
                         'No wallets tracked yet',
-                        style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 7),
                       const Text(
                         'Add a public Alephium address. This app remains read-only and never asks for a seed or private key.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                        style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                            height: 1.4),
                       ),
                       const SizedBox(height: 16),
                       FilledButton.icon(
@@ -151,13 +170,16 @@ class PortfolioScreen extends StatelessWidget {
               for (var i = 0; i < service.addresses.length; i++) ...[
                 _WalletCard(
                   address: service.addresses[i],
-                  selected: service.addresses[i].address == service.selectedAddress,
-                  selectedBalance: service.addresses[i].address == service.selectedAddress
-                      ? selectedState?.snapshot?.balance
-                      : null,
+                  selected:
+                      service.addresses[i].address == service.selectedAddress,
+                  selectedBalance:
+                      service.addresses[i].address == service.selectedAddress
+                          ? selectedState?.snapshot?.balance
+                          : null,
                   onTap: () => onOpenWallet(service.addresses[i].address),
                 ),
-                if (i != service.addresses.length - 1) const SizedBox(height: 10),
+                if (i != service.addresses.length - 1)
+                  const SizedBox(height: 10),
               ],
             if (service.hasWarning || !service.isOnline) ...[
               const SizedBox(height: 16),
@@ -166,14 +188,21 @@ class PortfolioScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      service.isOnline ? Icons.warning_amber_rounded : Icons.cloud_off_rounded,
-                      color: service.isOnline ? AppColors.warning : AppColors.negative,
+                      service.isOnline
+                          ? Icons.warning_amber_rounded
+                          : Icons.cloud_off_rounded,
+                      color: service.isOnline
+                          ? AppColors.warning
+                          : AppColors.negative,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         service.activeError ?? 'Some wallet data may be stale.',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.4),
+                        style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                            height: 1.4),
                       ),
                     ),
                   ],
@@ -212,44 +241,73 @@ class PortfolioScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Track Alephium Address',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'Public address only. Never paste a private key or seed phrase.',
-                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      style: TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12),
                     ),
                     const SizedBox(height: 18),
                     TextField(
                       controller: addressController,
                       autofocus: true,
-                      decoration: const InputDecoration(labelText: 'Alephium address'),
+                      decoration:
+                          const InputDecoration(labelText: 'Alephium address'),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: labelController,
-                      decoration: const InputDecoration(labelText: 'Wallet name (optional)'),
+                      decoration: const InputDecoration(
+                          labelText: 'Wallet name (optional)'),
                     ),
                     if (error != null) ...[
                       const SizedBox(height: 10),
-                      Text(error!, style: const TextStyle(color: AppColors.negative, fontSize: 12)),
+                      Text(error!,
+                          style: const TextStyle(
+                              color: AppColors.negative, fontSize: 12)),
                     ],
                     const SizedBox(height: 18),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
                         onPressed: () async {
+                          final normalizedAddress =
+                              addressController.text.trim();
+                          final normalizedLabel = labelController.text.trim();
+
+                          if (normalizedAddress.isEmpty) {
+                            setModalState(() {
+                              error = 'Address is required';
+                            });
+                            return;
+                          }
+
+                          if (!isValidAlephiumAddress(normalizedAddress)) {
+                            setModalState(() {
+                              error = 'Invalid address';
+                            });
+                            return;
+                          }
+
                           try {
-                            await context.read<WalletMonitorService>().addAddress(
-                                  addressController.text,
-                                  labelController.text,
+                            await context
+                                .read<WalletMonitorService>()
+                                .addAddress(
+                                  normalizedAddress,
+                                  normalizedLabel,
                                 );
                             if (context.mounted) {
                               Navigator.pop(context);
                             }
                           } catch (e) {
                             setModalState(() {
-                              error = e.toString().replaceFirst('Exception: ', '');
+                              error =
+                                  e.toString().replaceFirst('Exception: ', '');
                             });
                           }
                         },
@@ -289,7 +347,10 @@ class _LogoMark extends StatelessWidget {
       child: const Center(
         child: Text(
           'A',
-          style: TextStyle(color: AppColors.background, fontWeight: FontWeight.w900, fontSize: 17),
+          style: TextStyle(
+              color: AppColors.background,
+              fontWeight: FontWeight.w900,
+              fontSize: 17),
         ),
       ),
     );
@@ -297,7 +358,8 @@ class _LogoMark extends StatelessWidget {
 }
 
 class _MetricPill extends StatelessWidget {
-  const _MetricPill({required this.icon, required this.label, required this.color});
+  const _MetricPill(
+      {required this.icon, required this.label, required this.color});
 
   final IconData icon;
   final String label;
@@ -317,7 +379,9 @@ class _MetricPill extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+          Text(label,
+              style: TextStyle(
+                  color: color, fontSize: 10, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -347,9 +411,12 @@ class _WalletCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: selected ? AppColors.primaryMuted : AppColors.backgroundElevated,
+              color: selected
+                  ? AppColors.primaryMuted
+                  : AppColors.backgroundElevated,
               borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: selected ? AppColors.primary : AppColors.border),
+              border: Border.all(
+                  color: selected ? AppColors.primary : AppColors.border),
             ),
             child: Icon(
               Icons.account_balance_wallet_rounded,
@@ -367,7 +434,10 @@ class _WalletCard extends StatelessWidget {
                       child: Text(
                         address.label,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14),
+                        style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14),
                       ),
                     ),
                     if (selected) ...[
@@ -375,7 +445,8 @@ class _WalletCard extends StatelessWidget {
                       Container(
                         width: 6,
                         height: 6,
-                        decoration: const BoxDecoration(color: AppColors.positive, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(
+                            color: AppColors.positive, shape: BoxShape.circle),
                       ),
                     ],
                   ],
@@ -383,7 +454,10 @@ class _WalletCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   formatShortAddress(address.address),
-                  style: const TextStyle(color: AppColors.textMuted, fontFamily: 'monospace', fontSize: 10),
+                  style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontFamily: 'monospace',
+                      fontSize: 10),
                 ),
               ],
             ),
@@ -393,15 +467,20 @@ class _WalletCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                selectedBalance == null ? 'Open wallet' : '${formatAlph(selectedBalance!, decimals: 6)} ALPH',
+                selectedBalance == null
+                    ? 'Open wallet'
+                    : '${formatAlph(selectedBalance!, decimals: 6)} ALPH',
                 style: TextStyle(
-                  color: selectedBalance == null ? AppColors.textSecondary : AppColors.textPrimary,
+                  color: selectedBalance == null
+                      ? AppColors.textSecondary
+                      : AppColors.textPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
               ),
               const SizedBox(height: 4),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 18),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textMuted, size: 18),
             ],
           ),
         ],
