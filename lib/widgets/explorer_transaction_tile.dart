@@ -18,7 +18,7 @@ class ExplorerTransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final incoming = transaction.isIncoming;
     final directionColor = incoming ? AppColors.positive : AppColors.negative;
-    final amount = incoming ? transaction.incomingAmount : transaction.netAmount.abs();
+    final amount = transaction.netAmount.abs();
     final counterparty = incoming
         ? (transaction.fromAddress.isEmpty ? '-' : transaction.fromAddress)
         : (transaction.toAddress.isEmpty ? '-' : transaction.toAddress);
