@@ -32,7 +32,8 @@ void main() {
     expect(tx.fee, BigInt.zero);
   });
 
-  test('outgoing UTXO tx derives net change from input and change output once', () {
+  test('outgoing UTXO tx derives net change from input and change output once',
+      () {
     final tx = AlephiumTransaction.fromJson(
       {
         'hash': 'tx_out_1',
@@ -135,7 +136,25 @@ void main() {
 
     expect(
       tx.timestamp.toUtc(),
-      DateTime.fromMicrosecondsSinceEpoch(1731000000000000, isUtc: true).toUtc(),
+      DateTime.fromMicrosecondsSinceEpoch(1731000000000000, isUtc: true)
+          .toUtc(),
+    );
+  });
+
+  test('timestamp parser handles milliseconds timestamp', () {
+    final tx = AlephiumTransaction.fromJson(
+      {
+        'timestamp': '1731000000000',
+        'outputs': [
+          {'address': targetAddress, 'attoAlphAmount': '1000000000000000000'},
+        ],
+      },
+      targetAddress,
+    );
+
+    expect(
+      tx.timestamp.toUtc(),
+      DateTime.fromMillisecondsSinceEpoch(1731000000000, isUtc: true).toUtc(),
     );
   });
 }

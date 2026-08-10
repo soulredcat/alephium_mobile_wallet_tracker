@@ -160,6 +160,8 @@ class AlephiumTransaction {
       return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
     }
 
+    // Alephium API timestamps can be seconds (10 digits), milliseconds (13 digits),
+    // or microseconds (16 digits).
     if (epochValue < 10000000000) {
       return DateTime.fromMillisecondsSinceEpoch(
         epochValue * 1000,
@@ -167,15 +169,14 @@ class AlephiumTransaction {
       ).toLocal();
     }
 
-    final digits = epochValue.toString().length;
-    if (digits <= 13) {
+    if (epochValue < 10000000000000) {
       return DateTime.fromMillisecondsSinceEpoch(
         epochValue,
         isUtc: true,
       ).toLocal();
     }
 
-    if (digits <= 16) {
+    if (epochValue < 10000000000000000) {
       return DateTime.fromMicrosecondsSinceEpoch(
         epochValue,
         isUtc: true,
