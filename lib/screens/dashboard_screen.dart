@@ -317,7 +317,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }
 
             try {
-              await service.addAddress(normalized, label);
+              await service.addAddress(
+                normalized,
+                label,
+                refreshAfterAdd: false,
+              );
               return null;
             } catch (error) {
               return _extractErrorMessage(error);
@@ -334,6 +338,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _showToast(context, result);
       return;
     }
+
+    try {
+      await service.refreshActiveAddress(force: true);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showToast(context, _extractErrorMessage(error));
+      return;
+    }
+
     _showToast(context, 'Address added');
   }
 
@@ -1082,6 +1097,7 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
         curve: Curves.easeOut,
         child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
