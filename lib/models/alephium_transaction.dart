@@ -18,6 +18,12 @@ class AlephiumTransaction {
   final String hash;
   final DateTime timestamp;
   final String blockHash;
+
+  /// Net ALPH balance change for the tracked address.
+  ///
+  /// Alephium uses a UTXO model. The transaction fee is already reflected in
+  /// the difference between the tracked address' consumed inputs and outputs
+  /// returning to it, so the fee must not be subtracted a second time.
   final BigInt netAmount;
   final BigInt incomingAmount;
   final BigInt outgoingAmount;
@@ -73,18 +79,17 @@ class AlephiumTransaction {
     final gasAmount = attoToBigInt(json['gasAmount']);
     final gasPrice = attoToBigInt(json['gasPrice']);
     final fee = gasAmount * gasPrice;
-    final isOutgoing = outgoing > BigInt.zero;
 
     return AlephiumTransaction(
       hash: hash,
       timestamp: txTimestamp,
       blockHash: blockHash,
-      netAmount: incoming - outgoing - (isOutgoing ? fee : BigInt.zero),
+      netAmount: incoming - outgoing,
       incomingAmount: incoming,
       outgoingAmount: outgoing,
       fee: fee,
-      fromAddress: firstOutgoingOther.isEmpty ? '' : firstOutgoingOther,
-      toAddress: firstIncomingOther.isEmpty ? '' : firstIncomingOther,
+      fromAddress: firstOutgoingOther,
+      toAddress: firstIncomingOther,
       scriptOk: scriptOk,
       coinbase: coinbase,
     );
@@ -99,6 +104,8 @@ class AlephiumTransaction {
       'incomingAmount': incomingAmount.toString(),
       'outgoingAmount': outgoingAmount.toString(),
       'fee': fee.toString(),
+      'fromAddress': fromAddress,
+      'toAddress': toAddress,
       'scriptOk': scriptOk,
       'coinbase': coinbase,
     };
@@ -154,7 +161,6 @@ class AlephiumTransaction {
     }
 
     if (epochValue < 10000000000) {
-      // Seconds precision.
       return DateTime.fromMillisecondsSinceEpoch(
         epochValue * 1000,
         isUtc: true,
@@ -163,7 +169,6 @@ class AlephiumTransaction {
 
     final digits = epochValue.toString().length;
     if (digits <= 13) {
-      // Milliseconds precision.
       return DateTime.fromMillisecondsSinceEpoch(
         epochValue,
         isUtc: true,
@@ -171,14 +176,12 @@ class AlephiumTransaction {
     }
 
     if (digits <= 16) {
-      // Microseconds precision.
       return DateTime.fromMicrosecondsSinceEpoch(
         epochValue,
         isUtc: true,
       ).toLocal();
     }
 
-    // Nanoseconds precision fallback (trim to microseconds).
     return DateTime.fromMicrosecondsSinceEpoch(
       epochValue ~/ 1000,
       isUtc: true,
