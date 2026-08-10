@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -15,10 +17,14 @@ Future<void> main() async {
 
   runApp(
     ChangeNotifierProvider(
-      create: (_) => WalletMonitorService(
-        apiRepository: apiRepository,
-        localStoreRepository: storeRepository,
-      ),
+      create: (_) {
+        final service = WalletMonitorService(
+          apiRepository: apiRepository,
+          localStoreRepository: storeRepository,
+        );
+        unawaited(service.initialize());
+        return service;
+      },
       child: const MobileMonitorApp(),
     ),
   );

@@ -19,14 +19,6 @@ class _ExplorerShellState extends State<ExplorerShell> {
   int _index = 0;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<WalletMonitorService>().initialize();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
       PortfolioScreen(onOpenWallet: _openWallet),
@@ -93,21 +85,38 @@ class _SettingsScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Monitor mode',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Read-only. The application tracks public Alephium addresses and does not store private keys or seed phrases.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.45),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.45,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    const Expanded(child: Text('Network', style: TextStyle(color: AppColors.textSecondary))),
+                    const Expanded(
+                      child: Text(
+                        'Network',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
                     Text(
-                      service.isNetworkAvailable ? 'Mainnet · Connected' : 'Mainnet · Offline',
+                      service.isNetworkAvailable
+                          ? 'Mainnet · Connected'
+                          : 'Mainnet · Offline',
                       style: TextStyle(
-                        color: service.isNetworkAvailable ? AppColors.positive : AppColors.warning,
+                        color: service.isNetworkAvailable
+                            ? AppColors.positive
+                            : AppColors.warning,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -117,8 +126,19 @@ class _SettingsScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Expanded(child: Text('Tracked wallets', style: TextStyle(color: AppColors.textSecondary))),
-                    Text('${service.addressCount}', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700)),
+                    const Expanded(
+                      child: Text(
+                        'Tracked wallets',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
+                    Text(
+                      '${service.addressCount}',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -131,12 +151,20 @@ class _SettingsScreen extends StatelessWidget {
               children: [
                 Text(
                   'Data source',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w800, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   'Alephium mainnet explorer backend. Cached wallet data remains available when the device is offline.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12, height: 1.45),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    height: 1.45,
+                  ),
                 ),
               ],
             ),
