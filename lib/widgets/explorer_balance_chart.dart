@@ -80,7 +80,6 @@ class ExplorerBalanceChart extends StatelessWidget {
           ),
           lineTouchData: LineTouchData(
             touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (_) => AppColors.surfaceElevated,
               getTooltipItems: (touched) => touched.map((spot) {
                 final index = spot.x.round();
                 if (index < 0 || index >= points.length) {
