@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/alephium_transaction.dart';
+import '../screens/transaction_details_screen.dart';
 import '../utils/alephium_formats.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -192,112 +193,10 @@ class TransactionListItem extends StatelessWidget {
   }
 
   void _openTransactionDetails(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
-          ),
-          child: Wrap(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.receipt_long),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Transaction details',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _DetailRow(
-                label: 'Time',
-                value: formatUsdDate(transaction.timestamp.toLocal()),
-                onCopy: () => _copyToClipboard(
-                  sheetContext,
-                  transaction.timestamp.toIso8601String(),
-                  'Timestamp copied',
-                ),
-              ),
-              _DetailRow(
-                label: 'Type',
-                value: transaction.isIncoming ? 'Incoming' : 'Outgoing',
-              ),
-              _DetailRow(
-                label: 'Amount',
-                value:
-                    '${transaction.netAmount.isNegative ? '-' : '+'}${formatAlph(transaction.netAmount.abs())} ALPH',
-                monospace: true,
-              ),
-              _DetailRow(
-                label: 'Incoming',
-                value: '${formatAlph(transaction.incomingAmount)} ALPH',
-              ),
-              _DetailRow(
-                label: 'Outgoing',
-                value: '${formatAlph(transaction.outgoingAmount)} ALPH',
-              ),
-              _DetailRow(
-                label: 'Fee',
-                value: '${formatAlph(transaction.fee)} ALPH',
-              ),
-              _DetailRow(
-                label: 'Block',
-                value:
-                    transaction.blockHash.isEmpty ? '-' : transaction.blockHash,
-                onCopy: transaction.blockHash.isEmpty
-                    ? null
-                    : () => _copyToClipboard(
-                          sheetContext,
-                          transaction.blockHash,
-                          'Block hash copied',
-                        ),
-              ),
-              _DetailRow(
-                label: 'Hash',
-                value: transaction.hash,
-                monospace: true,
-                onCopy: transaction.hash.isEmpty
-                    ? null
-                    : () => _copyToClipboard(
-                          sheetContext,
-                          transaction.hash,
-                          'Hash copied',
-                        ),
-              ),
-              _DetailRow(
-                label: 'Status',
-                value: transaction.scriptOk ? 'Success' : 'Failed',
-                valueColor: transaction.scriptOk ? Colors.green : Colors.orange,
-              ),
-              _DetailRow(
-                label: 'Coinbase',
-                value: transaction.coinbase ? 'Yes' : 'No',
-              ),
-              _DetailRow(
-                label: 'From',
-                value: transaction.fromAddress.isEmpty
-                    ? '-'
-                    : formatShortAddress(transaction.fromAddress),
-                monospace: true,
-              ),
-              _DetailRow(
-                label: 'To',
-                value: transaction.toAddress.isEmpty
-                    ? '-'
-                    : formatShortAddress(transaction.toAddress),
-                monospace: true,
-              ),
-            ],
-          ),
-        );
-      },
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => TransactionDetailsScreen(transaction: transaction),
+      ),
     );
   }
 
@@ -326,59 +225,6 @@ class TransactionListItem extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: value));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.label,
-    required this.value,
-    this.onCopy,
-    this.monospace = false,
-    this.valueColor,
-  });
-
-  final String label;
-  final String value;
-  final VoidCallback? onCopy;
-  final bool monospace;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          Expanded(
-            flex: 6,
-            child: SelectableText(
-              value,
-              style: TextStyle(
-                color:
-                    valueColor ?? Theme.of(context).textTheme.bodyMedium?.color,
-                fontFamily: monospace ? 'monospace' : null,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          if (onCopy != null)
-            IconButton(
-              tooltip: 'Copy',
-              icon: const Icon(Icons.copy, size: 18),
-              onPressed: onCopy,
-            ),
-        ],
-      ),
     );
   }
 }

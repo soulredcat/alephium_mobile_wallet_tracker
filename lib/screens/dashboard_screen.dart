@@ -209,7 +209,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.25),
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 0.25),
                     ),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                   ),
@@ -296,7 +298,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           addressController: _addressController,
           labelController: _labelController,
           onSubmit: (address, label) async {
-            final service = context.read<WalletMonitorService>();
+            if (!sheetContext.mounted) {
+              return 'Context no longer available';
+            }
+
+            final service = sheetContext.read<WalletMonitorService>();
             final normalized = address.trim();
             if (normalized.isEmpty) {
               return 'Address is required';
@@ -449,44 +455,52 @@ class _DashboardScreenState extends State<DashboardScreen> {
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 16,
-          ),
-          child: Wrap(
-            children: [
-              const Text(
-                'Rename address',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'Example: Main Wallet',
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+        return SafeArea(
+          child: AnimatedPadding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 16 + MediaQuery.of(sheetContext).viewInsets.bottom,
+            ),
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOut,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    child: const Text('Cancel'),
+                  const Text(
+                    'Rename address',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: () =>
-                        Navigator.pop(sheetContext, controller.text.trim()),
-                    child: const Text('Save'),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                      hintText: 'Example: Main Wallet',
+                    ),
                   ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () =>
+                            Navigator.pop(sheetContext, controller.text.trim()),
+                        child: const Text('Save'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                 ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -1035,62 +1049,70 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: Wrap(
-        children: [
-          const Text(
-            'Add Alephium Address',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    return SafeArea(
+      child: AnimatedPadding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Add Alephium Address',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: widget.addressController,
+                decoration: const InputDecoration(
+                  labelText: 'Address',
+                  helperText: 'Example: 1Hkq...',
+                ),
+                onTapOutside: (_) => FocusScope.of(context).unfocus(),
+                onChanged: (_) {
+                  if (_errorMessage != null) {
+                    setState(() {
+                      _errorMessage = null;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: widget.labelController,
+                decoration: const InputDecoration(labelText: 'Name (optional)'),
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Save'),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: widget.addressController,
-            decoration: const InputDecoration(
-              labelText: 'Address',
-              helperText: 'Example: 1Hkq...',
-            ),
-            onTapOutside: (_) => FocusScope.of(context).unfocus(),
-            onChanged: (_) {
-              if (_errorMessage != null) {
-                setState(() {
-                  _errorMessage = null;
-                });
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: widget.labelController,
-            decoration: const InputDecoration(labelText: 'Name (optional)'),
-          ),
-          if (_errorMessage != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              _errorMessage!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          ],
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _handleSubmit,
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text('Save'),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

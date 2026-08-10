@@ -216,127 +216,155 @@ class PortfolioScreen extends StatelessWidget {
   }
 
   static Future<void> _showAddWallet(BuildContext context) async {
-    final addressController = TextEditingController();
-    final labelController = TextEditingController();
-    String? error;
-
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.backgroundElevated,
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (bottomSheetContext, setModalState) {
-            return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  20,
-                  16,
-                  20 + MediaQuery.of(bottomSheetContext).viewInsets.bottom,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Track Alephium Address',
-                      style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Public address only. Never paste a private key or seed phrase.',
-                      style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
-                    ),
-                    const SizedBox(height: 18),
-                    TextField(
-                      controller: addressController,
-                      autofocus: true,
-                      decoration:
-                          const InputDecoration(labelText: 'Alephium address'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: labelController,
-                      decoration: const InputDecoration(
-                          labelText: 'Wallet name (optional)'),
-                    ),
-                    if (error != null) ...[
-                      const SizedBox(height: 10),
-                      Text(error!,
-                          style: const TextStyle(
-                              color: AppColors.negative, fontSize: 12)),
-                    ],
-                    const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () async {
-                          final normalizedAddress =
-                              addressController.text.trim();
-                          final normalizedLabel = labelController.text.trim();
+      builder: (_) => const _AddWalletSheet(),
+    );
+  }
+}
 
-                          if (normalizedAddress.isEmpty) {
-                            if (!bottomSheetContext.mounted) {
-                              return;
-                            }
-                            setModalState(() {
-                              error = 'Address is required';
-                            });
-                            return;
-                          }
+class _AddWalletSheet extends StatefulWidget {
+  const _AddWalletSheet();
 
-                          if (!isValidAlephiumAddress(normalizedAddress)) {
-                            if (!bottomSheetContext.mounted) {
-                              return;
-                            }
-                            setModalState(() {
-                              error = 'Invalid address';
-                            });
-                            return;
-                          }
+  @override
+  State<_AddWalletSheet> createState() => _AddWalletSheetState();
+}
 
-                          try {
-                            await bottomSheetContext
-                                .read<WalletMonitorService>()
-                                .addAddress(
-                                  normalizedAddress,
-                                  normalizedLabel,
-                                );
-                            if (!bottomSheetContext.mounted) {
-                              return;
-                            }
-                            if (Navigator.of(bottomSheetContext).canPop()) {
-                              Navigator.of(bottomSheetContext).pop();
-                            }
-                          } catch (e) {
-                            if (!bottomSheetContext.mounted) {
-                              return;
-                            }
-                            setModalState(
-                              () => error =
-                                  e.toString().replaceFirst('Exception: ', ''),
-                            );
-                          }
-                        },
-                        child: const Text('Add wallet'),
-                      ),
-                    ),
-                  ],
+class _AddWalletSheetState extends State<_AddWalletSheet> {
+  final _addressController = TextEditingController();
+  final _labelController = TextEditingController();
+  String? _error;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _labelController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    final normalizedAddress = _addressController.text.trim();
+    final normalizedLabel = _labelController.text.trim();
+
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    if (normalizedAddress.isEmpty) {
+      setState(() {
+        _isSubmitting = false;
+        _error = 'Address is required';
+      });
+      return;
+    }
+
+    if (!isValidAlephiumAddress(normalizedAddress)) {
+      setState(() {
+        _isSubmitting = false;
+        _error = 'Invalid address';
+      });
+      return;
+    }
+
+    try {
+      await context.read<WalletMonitorService>().addAddress(
+            normalizedAddress,
+            normalizedLabel,
+          );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+        _error = error.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          20 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Track Alephium Address',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-            );
-          },
-        );
-      },
+              const SizedBox(height: 8),
+              const Text(
+                'Public address only. Never paste a private key or seed phrase.',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: _addressController,
+                autofocus: true,
+                decoration:
+                    const InputDecoration(labelText: 'Alephium address'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _labelController,
+                decoration:
+                    const InputDecoration(labelText: 'Wallet name (optional)'),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  _error!,
+                  style:
+                      const TextStyle(color: AppColors.negative, fontSize: 12),
+                ),
+              ],
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Add wallet'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-
-    addressController.dispose();
-    labelController.dispose();
   }
 }
 
