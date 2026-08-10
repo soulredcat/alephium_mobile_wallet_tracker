@@ -6,16 +6,23 @@ import '../models/wallet_chart_point.dart';
 import '../theme/app_colors.dart';
 
 class ExplorerBalanceChart extends StatelessWidget {
-  const ExplorerBalanceChart({required this.points, super.key});
+  const ExplorerBalanceChart({
+    required this.points,
+    super.key,
+    this.height = 210,
+    this.showAxes = true,
+  });
 
   final List<BalanceChartPoint> points;
+  final double height;
+  final bool showAxes;
 
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
-      return const SizedBox(
-        height: 190,
-        child: Center(
+      return SizedBox(
+        height: height,
+        child: const Center(
           child: Text(
             'Balance history will appear after synchronization.',
             style: TextStyle(color: AppColors.textMuted),
@@ -36,12 +43,13 @@ class ExplorerBalanceChart extends StatelessWidget {
         .toList(growable: false);
 
     return SizedBox(
-      height: 210,
+      height: height,
       child: LineChart(
         LineChartData(
           minY: minValue - padding,
           maxY: maxValue + padding,
           gridData: FlGridData(
+            show: showAxes,
             drawVerticalLine: false,
             horizontalInterval: spread == 0 ? 1 : spread / 3,
             getDrawingHorizontalLine: (_) => const FlLine(
@@ -56,8 +64,8 @@ class ExplorerBalanceChart extends StatelessWidget {
             leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 26,
+                showTitles: showAxes,
+                reservedSize: showAxes ? 26 : 0,
                 interval: points.length <= 4 ? 1 : (points.length / 4).ceilToDouble(),
                 getTitlesWidget: (value, meta) {
                   final index = value.round();
@@ -79,6 +87,7 @@ class ExplorerBalanceChart extends StatelessWidget {
             ),
           ),
           lineTouchData: LineTouchData(
+            enabled: showAxes,
             touchTooltipData: LineTouchTooltipData(
               getTooltipItems: (touched) => touched.map((spot) {
                 final index = spot.x.round();
@@ -103,7 +112,7 @@ class ExplorerBalanceChart extends StatelessWidget {
               isCurved: true,
               curveSmoothness: 0.25,
               color: AppColors.primary,
-              barWidth: 2.2,
+              barWidth: showAxes ? 2.2 : 1.8,
               dotData: const FlDotData(show: false),
               belowBarData: BarAreaData(
                 show: true,
