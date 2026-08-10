@@ -109,11 +109,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 ),
                 if (i != transactions.length - 1) const SizedBox(height: 10),
               ],
-              if (state?.hasMoreTx ?? false) ...[
+              if (state.hasMoreTx) ...[
                 const SizedBox(height: 14),
                 Center(
                   child: OutlinedButton.icon(
-                    onPressed: state?.isLoading == true || !service.isNetworkAvailable
+                    onPressed: state.isLoading || !service.isNetworkAvailable
                         ? null
                         : service.loadMoreTransactions,
                     icon: const Icon(Icons.expand_more_rounded),
