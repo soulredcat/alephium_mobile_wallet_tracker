@@ -177,6 +177,11 @@ class PortfolioScreen extends StatelessWidget {
                           ? selectedState?.snapshot?.balance
                           : null,
                   onTap: () => onOpenWallet(service.addresses[i].address),
+                  canRemove: service.addresses.length > 1,
+                  onRemove: () => _confirmRemoveWallet(
+                    context,
+                    service.addresses[i],
+                  ),
                 ),
                 if (i != service.addresses.length - 1)
                   const SizedBox(height: 10),
@@ -272,6 +277,54 @@ class PortfolioScreen extends StatelessWidget {
   static void _showToast(BuildContext context, String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static Future<void> _confirmRemoveWallet(
+    BuildContext context,
+    AlephiumAddress wallet,
+  ) async {
+    final service = context.read<WalletMonitorService>();
+    if (service.addressCount <= 1) {
+      _showToast(context, 'At least one wallet is required');
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Remove wallet'),
+        content: Text(
+          'Remove ${wallet.label} from tracking (${formatShortAddress(wallet.address)})?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (!context.mounted || confirm != true) {
+      return;
+    }
+
+    try {
+      await service.removeAddress(wallet.address);
+      if (!context.mounted) {
+        return;
+      }
+      _showToast(context, 'Wallet removed');
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+      _showToast(context, error.toString().replaceFirst('Exception: ', ''));
+    }
   }
 }
 
@@ -495,12 +548,16 @@ class _WalletCard extends StatelessWidget {
     required this.address,
     required this.selected,
     required this.onTap,
+    required this.canRemove,
+    required this.onRemove,
     this.selectedBalance,
   });
 
   final AlephiumAddress address;
   final bool selected;
   final BigInt? selectedBalance;
+  final bool canRemove;
+  final VoidCallback onRemove;
   final VoidCallback onTap;
 
   @override
@@ -581,8 +638,27 @@ class _WalletCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.textMuted, size: 18),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: canRemove
+                        ? 'Remove wallet'
+                        : 'At least one wallet is required',
+                    onPressed: canRemove ? onRemove : null,
+                    color: canRemove
+                        ? AppColors.negative
+                        : AppColors.textMuted.withValues(alpha: 0.45),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppColors.textMuted, size: 18),
+                ],
+              ),
             ],
           ),
         ],
