@@ -25,7 +25,8 @@ class TransactionDetailsScreen extends StatelessWidget {
             tooltip: 'Copy transaction hash',
             onPressed: transaction.hash.isEmpty
                 ? null
-                : () => _copy(context, transaction.hash, 'Transaction hash copied'),
+                : () =>
+                    _copy(context, transaction.hash, 'Transaction hash copied'),
             icon: const Icon(Icons.copy_rounded),
           ),
         ],
@@ -71,16 +72,21 @@ class TransactionDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: (transaction.scriptOk ? AppColors.positive : AppColors.warning)
+                    color: (transaction.scriptOk
+                            ? AppColors.positive
+                            : AppColors.warning)
                         .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     transaction.scriptOk ? 'Confirmed' : 'Execution failed',
                     style: TextStyle(
-                      color: transaction.scriptOk ? AppColors.positive : AppColors.warning,
+                      color: transaction.scriptOk
+                          ? AppColors.positive
+                          : AppColors.warning,
                       fontWeight: FontWeight.w700,
                       fontSize: 11,
                     ),
@@ -89,7 +95,8 @@ class TransactionDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   formatUsdDate(transaction.timestamp),
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 12),
                 ),
               ],
             ),
@@ -105,40 +112,59 @@ class TransactionDetailsScreen extends StatelessWidget {
                   monospace: true,
                   onCopy: transaction.hash.isEmpty
                       ? null
-                      : () => _copy(context, transaction.hash, 'Transaction hash copied'),
+                      : () => _copy(
+                          context, transaction.hash, 'Transaction hash copied'),
                 ),
                 _DetailRow(
                   label: 'From',
-                  value: transaction.fromAddress.isEmpty ? '-' : transaction.fromAddress,
+                  value: transaction.fromAddress.isEmpty
+                      ? '-'
+                      : transaction.fromAddress,
                   monospace: true,
                   onCopy: transaction.fromAddress.isEmpty
                       ? null
-                      : () => _copy(context, transaction.fromAddress, 'Sender address copied'),
+                      : () => _copy(context, transaction.fromAddress,
+                          'Sender address copied'),
                 ),
                 _DetailRow(
                   label: 'To',
-                  value: transaction.toAddress.isEmpty ? '-' : transaction.toAddress,
+                  value: transaction.toAddress.isEmpty
+                      ? '-'
+                      : transaction.toAddress,
                   monospace: true,
                   onCopy: transaction.toAddress.isEmpty
                       ? null
-                      : () => _copy(context, transaction.toAddress, 'Recipient address copied'),
+                      : () => _copy(context, transaction.toAddress,
+                          'Recipient address copied'),
                 ),
-                _DetailRow(label: 'Net change', value: '${formatAlph(transaction.netAmount)} ALPH'),
-                _DetailRow(label: 'Network fee', value: '${formatAlph(transaction.fee)} ALPH'),
+                _DetailRow(
+                    label: 'Net change',
+                    value: '${formatAlph(transaction.netAmount)} ALPH'),
+                _DetailRow(
+                    label: 'Network fee',
+                    value: '${formatAlph(transaction.fee)} ALPH'),
                 _DetailRow(
                   label: 'Block hash',
-                  value: transaction.blockHash.isEmpty ? '-' : transaction.blockHash,
+                  value: transaction.blockHash.isEmpty
+                      ? '-'
+                      : transaction.blockHash,
                   monospace: true,
                   onCopy: transaction.blockHash.isEmpty
                       ? null
-                      : () => _copy(context, transaction.blockHash, 'Block hash copied'),
+                      : () => _copy(
+                          context, transaction.blockHash, 'Block hash copied'),
                 ),
                 _DetailRow(
                   label: 'Script execution',
                   value: transaction.scriptOk ? 'Success' : 'Failed',
-                  valueColor: transaction.scriptOk ? AppColors.positive : AppColors.warning,
+                  valueColor: transaction.scriptOk
+                      ? AppColors.positive
+                      : AppColors.warning,
                 ),
-                _DetailRow(label: 'Coinbase', value: transaction.coinbase ? 'Yes' : 'No', isLast: true),
+                _DetailRow(
+                    label: 'Coinbase',
+                    value: transaction.coinbase ? 'Yes' : 'No',
+                    isLast: true),
               ],
             ),
           ),
@@ -147,7 +173,8 @@ class TransactionDetailsScreen extends StatelessWidget {
             onPressed: transaction.hash.isEmpty
                 ? null
                 : () {
-                    final url = 'https://explorer.alephium.org/transactions/${transaction.hash}';
+                    final url =
+                        'https://explorer.alephium.org/transactions/${transaction.hash}';
                     _copy(context, url, 'Explorer URL copied');
                   },
             icon: const Icon(Icons.open_in_new_rounded, size: 18),
@@ -158,12 +185,14 @@ class TransactionDetailsScreen extends StatelessWidget {
     );
   }
 
-  static Future<void> _copy(BuildContext context, String value, String message) async {
+  static Future<void> _copy(
+      BuildContext context, String value, String message) async {
     await Clipboard.setData(ClipboardData(text: value));
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -200,13 +229,15 @@ class _DetailRow extends StatelessWidget {
             width: 112,
             child: Text(
               label,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style:
+                  const TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: SelectableText(
               value,
+              maxLines: 4,
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: valueColor ?? AppColors.textPrimary,
@@ -220,7 +251,8 @@ class _DetailRow extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               onTap: onCopy,
-              child: const Icon(Icons.copy_rounded, size: 16, color: AppColors.textSecondary),
+              child: const Icon(Icons.copy_rounded,
+                  size: 16, color: AppColors.textSecondary),
             ),
           ],
         ],

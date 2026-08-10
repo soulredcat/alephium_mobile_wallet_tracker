@@ -10,7 +10,8 @@ import '../models/alephium_transaction.dart';
 import '../widgets/address_selector.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/charts/balance_chart.dart';
-import '../widgets/transaction_list_item.dart';
+import '../widgets/explorer_transaction_tile.dart';
+import 'transaction_details_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -222,8 +223,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? maxDisplayedTransactions
                         : transactions.length,
                     separatorBuilder: (_, __) => const Divider(height: 0),
-                    itemBuilder: (context, index) => TransactionListItem(
+                    itemBuilder: (context, index) => ExplorerTransactionTile(
                       transaction: transactions[index],
+                      onTap: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => TransactionDetailsScreen(
+                            transaction: transactions[index],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -289,6 +298,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _openAddAddressDialog(BuildContext context) async {
     _addressController.clear();
     _labelController.clear();
+    final service = context.read<WalletMonitorService>();
 
     final result = await showModalBottomSheet<String?>(
       context: context,
@@ -298,11 +308,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           addressController: _addressController,
           labelController: _labelController,
           onSubmit: (address, label) async {
-            if (!sheetContext.mounted) {
-              return 'Context no longer available';
-            }
-
-            final service = sheetContext.read<WalletMonitorService>();
             final normalized = address.trim();
             if (normalized.isEmpty) {
               return 'Address is required';
@@ -333,20 +338,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _openManageAddressesDialog(BuildContext context) async {
+    final service = context.read<WalletMonitorService>();
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       builder: (sheetContext) {
         return SafeArea(
-          child: Consumer<WalletMonitorService>(
-            builder: (_, service, __) {
-              if (service.addresses.isEmpty) {
+          child: AnimatedBuilder(
+            animation: service,
+            builder: (sheetContext, _) {
+              final addresses = service.addresses;
+              final insets = MediaQuery.of(sheetContext).viewInsets.bottom;
+
+              if (addresses.isEmpty) {
                 return Padding(
                   padding: EdgeInsets.only(
                     left: 16,
                     right: 16,
                     top: 16,
-                    bottom: 16 + MediaQuery.of(sheetContext).viewInsets.bottom,
+                    bottom: 16 + insets,
                   ),
                   child: SizedBox(
                     height: 120,
@@ -365,7 +376,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   left: 16,
                   right: 16,
                   top: 16,
-                  bottom: 16 + MediaQuery.of(sheetContext).viewInsets.bottom,
+                  bottom: 16 + insets,
                 ),
                 child: SizedBox(
                   height: MediaQuery.of(sheetContext).size.height * 0.7,
@@ -382,12 +393,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 12),
                       Expanded(
                         child: ListView.separated(
-                          itemCount: service.addresses.length,
+                          itemCount: addresses.length,
                           separatorBuilder: (_, __) => const Divider(height: 0),
                           itemBuilder: (_, index) => _buildAddressManagerTile(
                             context: sheetContext,
                             service: service,
-                            address: service.addresses[index],
+                            address: addresses[index],
                           ),
                         ),
                       ),
@@ -1031,20 +1042,30 @@ class _AddAddressSheetState extends State<_AddAddressSheet> {
       _errorMessage = null;
     });
 
-    final error = await widget.onSubmit(address, label);
-    if (!mounted) {
-      return;
-    }
+    try {
+      final error = await widget.onSubmit(address, label);
+      if (!mounted) {
+        return;
+      }
 
-    if (error == null) {
-      Navigator.pop(context, '');
-      return;
-    }
+      if (error == null) {
+        Navigator.pop(context, '');
+        return;
+      }
 
-    setState(() {
-      _isSubmitting = false;
-      _errorMessage = error;
-    });
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage = error;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage = error.toString().replaceFirst('Exception: ', '');
+      });
+    }
   }
 
   @override
