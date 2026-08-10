@@ -351,6 +351,7 @@ class WalletMonitorService extends ChangeNotifier {
     if (address == null) {
       return;
     }
+    final refreshAddress = address;
 
     final existingState = _addressStates[address] ?? const WalletAddressState();
     if (!force && existingState.isLoading) {
@@ -363,7 +364,9 @@ class WalletMonitorService extends ChangeNotifier {
         isLoading: false,
         errorMessage: _normalizeMessage(message),
       );
-      _setSyncOffline(message);
+      if (_selectedAddress == refreshAddress) {
+        _setSyncOffline(message);
+      }
       notifyListeners();
       return;
     }
@@ -387,7 +390,9 @@ class WalletMonitorService extends ChangeNotifier {
         isLoading: false,
         errorMessage: _normalizeMessage(message),
       );
-      _setSyncOffline(message);
+      if (_selectedAddress == refreshAddress) {
+        _setSyncOffline(message);
+      }
       notifyListeners();
       return;
     }
@@ -407,7 +412,9 @@ class WalletMonitorService extends ChangeNotifier {
       txFetchFailed = true;
       txFetchError = _humanizeError(error);
       final warningMessage = txFetchError;
-      _setSyncWarning(warningMessage);
+      if (_selectedAddress == refreshAddress) {
+        _setSyncWarning(warningMessage);
+      }
     }
 
     final hasMoreTx = txFetchFailed
@@ -442,9 +449,13 @@ class WalletMonitorService extends ChangeNotifier {
       await _localStoreRepository.saveState(address, nextState);
       if (txFetchFailed) {
         final warningMessage = txFetchError;
-        _setSyncWarning(warningMessage);
+        if (_selectedAddress == refreshAddress) {
+          _setSyncWarning(warningMessage);
+        }
       } else {
-        _setSyncOnline();
+        if (_selectedAddress == refreshAddress) {
+          _setSyncOnline();
+        }
       }
     } catch (error) {
       final fallback = _addressStates[address] ?? const WalletAddressState();
@@ -454,9 +465,13 @@ class WalletMonitorService extends ChangeNotifier {
         errorMessage: _normalizeMessage(message),
       );
       if (hadCachedTransactions) {
-        _setSyncWarning(message);
+        if (_selectedAddress == refreshAddress) {
+          _setSyncWarning(message);
+        }
       } else {
-        _setSyncOffline(message);
+        if (_selectedAddress == refreshAddress) {
+          _setSyncOffline(message);
+        }
       }
     } finally {
       notifyListeners();
@@ -521,7 +536,9 @@ class WalletMonitorService extends ChangeNotifier {
       );
       _addressStates[address] = next;
       await _localStoreRepository.saveState(address, next);
-      _setSyncOnline();
+      if (_selectedAddress == address) {
+        _setSyncOnline();
+      }
     } catch (error) {
       final message = _humanizeError(error);
       _addressStates[address] = current.copyWith(
@@ -529,9 +546,13 @@ class WalletMonitorService extends ChangeNotifier {
         errorMessage: _normalizeMessage(message),
       );
       if (hadPartialData) {
-        _setSyncWarning(message);
+        if (_selectedAddress == address) {
+          _setSyncWarning(message);
+        }
       } else {
-        _setSyncOffline(message);
+        if (_selectedAddress == address) {
+          _setSyncOffline(message);
+        }
       }
     } finally {
       notifyListeners();
