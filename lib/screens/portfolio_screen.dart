@@ -226,14 +226,14 @@ class PortfolioScreen extends StatelessWidget {
       backgroundColor: AppColors.backgroundElevated,
       builder: (sheetContext) {
         return StatefulBuilder(
-          builder: (context, setModalState) {
+          builder: (bottomSheetContext, setModalState) {
             return SafeArea(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   16,
                   20,
                   16,
-                  20 + MediaQuery.of(context).viewInsets.bottom,
+                  20 + MediaQuery.of(bottomSheetContext).viewInsets.bottom,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -281,6 +281,9 @@ class PortfolioScreen extends StatelessWidget {
                           final normalizedLabel = labelController.text.trim();
 
                           if (normalizedAddress.isEmpty) {
+                            if (!bottomSheetContext.mounted) {
+                              return;
+                            }
                             setModalState(() {
                               error = 'Address is required';
                             });
@@ -288,6 +291,9 @@ class PortfolioScreen extends StatelessWidget {
                           }
 
                           if (!isValidAlephiumAddress(normalizedAddress)) {
+                            if (!bottomSheetContext.mounted) {
+                              return;
+                            }
                             setModalState(() {
                               error = 'Invalid address';
                             });
@@ -295,20 +301,26 @@ class PortfolioScreen extends StatelessWidget {
                           }
 
                           try {
-                            await context
+                            await bottomSheetContext
                                 .read<WalletMonitorService>()
                                 .addAddress(
                                   normalizedAddress,
                                   normalizedLabel,
                                 );
-                            if (context.mounted) {
-                              Navigator.pop(context);
+                            if (!bottomSheetContext.mounted) {
+                              return;
+                            }
+                            if (Navigator.of(bottomSheetContext).canPop()) {
+                              Navigator.of(bottomSheetContext).pop();
                             }
                           } catch (e) {
-                            setModalState(() {
-                              error =
-                                  e.toString().replaceFirst('Exception: ', '');
-                            });
+                            if (!bottomSheetContext.mounted) {
+                              return;
+                            }
+                            setModalState(
+                              () => error =
+                                  e.toString().replaceFirst('Exception: ', ''),
+                            );
                           }
                         },
                         child: const Text('Add wallet'),
